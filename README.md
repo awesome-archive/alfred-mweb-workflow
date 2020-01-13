@@ -4,11 +4,12 @@
 使用前请参照最后一节 "设置环境变量" 配置
 
 **更新日志**
-
+* [2019年03月03日] 修复 [issue-13](https://github.com/tianhao/alfred-mweb-workflow/issues/13)
+* [2018年11月29日] 修复 [issue-12](https://github.com/tianhao/alfred-mweb-workflow/issues/12)
+* [2018年8月5日] 修复 [issue-11](https://github.com/tianhao/alfred-mweb-workflow/issues/11),将script内容移到shell文件，方便调整
 * [2017年12月18日] 修复 [issue-5](https://github.com/tianhao/alfred-mweb-workflow/issues/5)
 * [2017年11月25日] 修复 [issue-4](https://github.com/tianhao/alfred-mweb-workflow/issues/4); 提升速度
 * [2017年11月20日] 添加外部文档库搜索
-
 
 ## 搜索&打开内部文档
 ![](media/15064049765164/15100051287719.gif)
@@ -53,7 +54,6 @@ mo -h alfred,workflow mweb
 5. 关键字不区分大小写，输入"MWeb" 与 "mweb"效果相同。
 
 **tag选项(-t)**:
-
 1. 输入 `-t tag1[,tag2,...]` 触发workflow查找包含所有输入tag的文档，只有包含所有输入tag的文档才会显示；
 2. tag之间以逗号","隔开，tag不区分大小写，逗号也不区分中英文；
 3. 当输入-t 时，会触发展示可选的tag列表，选中需要的tag回车，workflow会将选中的tag加入选项中，并让你可以继续选择别的tag，如果你已经选好了需要的tag；
@@ -93,17 +93,14 @@ tag(todo) 和 关键字(pg_) 组合过滤文档
 
 ![](media/15064049765164/15100059425187.jpg)
 
-
 ## 搜索&打开外部文档
 如果你喜欢使用外部文档，甚至有多个外部文档库，那么这个外部文档库搜索就很重要，它能搜索多个文档目录将最佳匹配且最近更新文档列出来，然后使用你指定的Markdown app(默认是MWeb)打开。
 
 **配置**
-
 * **MARKDOWN_PATH** 变量，可以配置多个路径，路径之间以`:`隔开，例如:`${HOME}/working:${HOME}/blog:${HOME}/fun`
 * **MARKDOWN_APP** 变量,默认是`/Applications/MWeb.app`,你可以设置为其它App。
 
 **使用**
-
 * `moe [-h keyword1,keyword2,...] [keyword1 keyword2] `
 * 使用方法跟打开内部文档一样，只是触发关键字改成了**moe**, 另外没有 tag 过滤功能(-t)，因为外部文档没有tag。
 * **由于每次搜索都会查找路径下所有的 .md 文件，所以目录结构太深或无关文件太多的目录会影响速度(例如复杂项目的源代码目录)，建议集中管理你的文档，以提高搜索效率。**
@@ -116,14 +113,12 @@ tag(todo) 和 关键字(pg_) 组合过滤文档
 我用的是GitHub做静态博客，在用MWeb生成网站之后，需要做 `git add ...;  git commit ;git push`等一序列操作才能把最新文章推送到GitHub，博客才更新，所以做了一个一键push功能
 
 使用方法：
-
 1. 按设置环境变量的方法设置 MBLOG_HOME 变量 MBLOG_URL变量(一次性)
 2. 用MWeb生成生成网站
 3. 使用mpush 一键推送到GitHub或者别的远程git地址
 4. push完成之后会打开博客地址(用浏览器)
 
 静态博客使用方法请参考 MWeb 官方文档，这里只是做了一键push操作
-
 
 ## 设置环境变量(必须设置)
 
@@ -135,19 +130,33 @@ tag(todo) 和 关键字(pg_) 组合过滤文档
 
 2.打开MWeb偏好设置,复制对应路径到workflow变量中
 
+**MWeb 2内部文档的配置**
+* 默认文档位置：
+`${HOME}/Library/Containers/com.coderforart.MWeb/Data/Documents/mainlib/`
+* iCloud 文档位置：
+`${HOME}/Library/Mobile Documents/iCloud~com~coderforart~iOS~MWeb/Documents/mweb_documents_library/`
+* 静态博客保存位置
+`${HOME}/Library/Containers/com.coderforart.MWeb/Data/Documents/themes/Site/`
 ![](media/15064049765164/15111287325474.jpg)
 
-* **MARKDOWN_PATH** 变量，可以配置多个路径，路径之间以`:`隔开，例如:`${HOME}/working:${HOME}/blog:${HOME}/fun`
-* **MARKDOWN_APP** 变量,默认是`/Applications/MWeb.app`,你可以设置为其它App，设置后会用该App打开外部文档。
-* **MBLOG_URL(可选)** 填上的你Blog地址(如果使用了MWeb的静态博客功能)；
+**MWeb 3内部配置**
+* 默认文档位置：
+`${HOME}/Library/Containers/com.coderforart.MWeb3/Data/Documents/mainlib/`
+* iCloud 文档位置：
+`${HOME}/Library/Mobile Documents/iCloud~com~coderforart~iOS~MWeb/Documents/mweb_documents_library/`
+* 静态博客保存位置
+`${HOME}/Library/Containers/com.coderforart.MWeb3/Data/Documents/themes/Site/`
+![](media/15335343681756.jpg)
+
+**外部文档配置**
+* **MARKDOWN_PATH** 变量，外部文档搜索路径，可以配置多个路径，路径之间以`:`隔开，例如:`${HOME}/working:${HOME}/blog:${HOME}/fun`
+* **MARKDOWN_APP** 变量，打开外部文档的App，默认是`/Applications/MWeb.app`,你可以设置为其它App，设置后会用该App打开外部文档。
+
+**静态博客配置(可选)**
+* **MBLOG_HOME** 填静态博客生成目录；
+* **MBLOG_URL** 填上的你Blog地址(如果使用了MWeb的静态博客功能)；
 
 3.设置快捷键（可选）
 
-workflow 默认没有设置 mo 和 mpush 的快捷键，用户可以按照自己的需要设置快捷键
-
+workflow 默认没有设置`mo`、`moe`和`mpush`的快捷键，用户可以按照自己的需要设置快捷键
 ![](media/15064049765164/15111313608850.jpg)
-
-
-
-
-

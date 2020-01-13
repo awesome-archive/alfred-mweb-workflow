@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# NOTE: 本脚本要求所有参数用'或"合成一个参数，如 -t TODO 要输入为 '-t TODO' 或 "-t TODO"
+# alfred 会将所有输入作为一个参数，包括末尾的空格
+
 # 环境变量和目录检查
 if [ -z "${MDOC_HOME}" ];then
    echo "{ \"items\":["
@@ -8,6 +13,7 @@ if [ -z "${MDOC_HOME}" ];then
    echo "]}"
    exit 1
 fi
+MDOC_HOME=$(eval "echo ${MDOC_HOME}")
 if [ ! -d "${MDOC_HOME}/docs" ];then
    echo "{ \"items\":["
    echo "{"
@@ -28,6 +34,9 @@ last_input=0 # 最后一次输入的参数归类；与next_input 相同
 end_option=1 #　是否终止了除 keyword 以外类型的参数输入: 单最后一个字符为空格表示输出完成了
 end_char="" # 最后一个参数最后输入的字符
 
+# 收集参数的函数：
+# 1.收集tag,header,keyword参数，分别放到 tag_arr,header_arr,keyword_arr中
+# 2.判断用户一下个要输入的参数(next_input)
 get_params(){
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -65,7 +74,7 @@ get_params(){
     done
 }
 
-get_params $*
+get_params $* # 调用收集参数的函数
 #echo tag_arr=${tag_arr[@]}
 #echo header_arr=${header_arr[@]}
 #echo category_arr=${category_arr[@]}
@@ -115,7 +124,7 @@ output_files(){
     do
         printf '%s' ${separator}
         separator=","
-        h="$(head -1 "${i}"| sed 's/\\/\\\\/g' | sed 's/"/\\"/g')"
+        h="$(head -1 "${i}"| sed 's/\\/\\\\/g;s/"/\\"/g;s/[[:space:]]*$//g')"
         echo "{"
         echo "\"type\": \"file\","
         echo "\"title\": \"${h}\","
@@ -126,7 +135,7 @@ output_files(){
 }
 
 # 最后一个字符不是空格，且最后一次输入归类不是0，这表示该类型参数没有输入完成 --> 可以输出该类型选项
-if [ "$1" = "${1% }" -a ${last_input} -gt 0 ];then
+if [ "$*" = "${*% }" -a ${last_input} -gt 0 ];then
     end_option=0
 # 下一个参数类型=最后一次输入类型，且类型不是0，表示该类型参数没有输入完成 --> 可以输出该类型选项
 elif [ ${next_input} -gt 0 -a ${last_input} = ${next_input} ];then
@@ -216,11 +225,12 @@ if [ ${#keyword_arr[@]} -gt 0 ];then
     # 第三步: 去掉 "匹配个数" 字段，只保留"文件名"
     # 由于ls -lt 是按照编辑时间倒序排序的，所以最终排序等级：标题匹配个数倒序->最后编辑倒序
     egrep_expr="$(echo "${keyword_arr[@]}" | sed "s/[[:blank:]]/|/g")"
-    sort_expr="awk '{system(\"egrep -ioe \\\"${egrep_expr}\\\" <<< \`head -1 \"\$1 \"\`|wc -l | xargs echo \"\$1)}' | sort -rk 2 | awk '{print \$1}'"
+    sort_expr="awk '{system(\"egrep -ioe \\\"${egrep_expr}\\\" <<< \`head -1 \"\$1 \"\`|wc -l | xargs -I\\\"{}\\\" echo \\\"{}\\\" \\\"\"\$1\"\\\"\")}' | sort -r | awk '{print \$2}'"
     final_expr="${final_expr} | ${sort_expr} "
 fi
 
 final_expr="${final_expr} | head -20 " # 限制最多输出20条记录
 #echo "$final_expr"
 files=`eval "${final_expr}"`
+#eval "${final_expr}"
 output_files
